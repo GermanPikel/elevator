@@ -9,7 +9,7 @@ from random import randint
 information = {
     'floors': 8,
     'capacity': 700,
-    'position': 5
+    'position': 3
 }
 
 class Human:

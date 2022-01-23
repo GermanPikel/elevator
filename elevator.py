@@ -7,7 +7,7 @@ from random import randint
 # симуляция работы лифта
 
 information = {
-    'floors': 9,
+    'floors': 8,
     'capacity': 800,
     'position': 5
 }

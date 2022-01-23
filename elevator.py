@@ -8,7 +8,7 @@ from random import randint
 
 information = {
     'floors': 8,
-    'capacity': 800,
+    'capacity': 700,
     'position': 5
 }
 

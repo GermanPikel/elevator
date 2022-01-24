@@ -12,6 +12,7 @@ information = {
     'position': 3
 }
 
+
 class Human:
     def __init__(self, weight_kg=0, current_floor=0, going_to=0, difference=0, inside=False):
         self.weight = weight_kg
@@ -30,7 +31,6 @@ class Human:
         return self.difference < other.difference
 
 
-
 class Elevator:
     def __init__(self, floors=information['floors'], capacity=information['capacity'], position=information['position'], waiters=[], inside=[], workload=0):
         self.floors = floors
@@ -43,6 +43,8 @@ class Elevator:
     def __lt__(self, other):
         for i in range(1, self.waiters):
             return self.waiters[i - 1].difference < self.waiters[i].difference
+
+
 
     # 1 действие программы
     def moving(self):
@@ -62,8 +64,7 @@ class Elevator:
                 elevator.position = floor
                 elevator.operation(elevator.position, human)
             self.waiters.remove(human)
-            self.waiters = update_waiters(self.waiters)
-
+            self.waiters = update_waiters(self.waiters.copy())
 
     def check_capacity(self, human: Human, elevator):
         if elevator.workload + human.weight <= elevator.capacity:
@@ -106,6 +107,9 @@ class Elevator:
         for waiter in self.waiters:
             waiters_list.append(waiter.__str__())
         return str(waiters_list)
+
+
+elevator = Elevator()
 
 
 def validate_elevator_parameters(floors: int, capacity: int, current_elevator_floor: int):
@@ -166,54 +170,58 @@ def skip_waiter():
 
 
 # Начало программы
-while True:  # Проверяем валидатность лифта
-    try:
-        elevator = Elevator()
-        floors = elevator.floors
-        capacity = elevator.capacity
-        current_elevator_floor = elevator.position
-    except ValueError:
-        print('некорректный ввод данных')
-        continue
-
-    if validate_elevator_parameters(floors, capacity, current_elevator_floor):
-        elevator = Elevator(floors, capacity, current_elevator_floor, None)
-        break
-    else:
-        exit()
-
-started = False
-waiters = []
-
-while True:
-    if not started:  # Начинаем работу лифта
+def main():
+    while True:  # Проверяем валидатность лифта
         try:
-            amount_people = randint(1, 5)
-            started = True
-            while amount_people > 0:
-                try:
-                    waiter = generate_human()
-                    if validate_human_parameters(waiter.weight, waiter.current_floor, floors, waiter.going_to):
-                        amount_people -= 1
-                        waiter = Human(waiter.weight, waiter.current_floor, waiter.going_to)
-                        difference = abs(waiter.current_floor - elevator.position)
-                        waiter.set_difference(difference)
-                        waiters.append(waiter)
-
-                except ValueError:
-                    print('некорректный ввод данных')
-                    continue
-
+            elevator = Elevator()
+            floors = elevator.floors
+            capacity = elevator.capacity
+            current_elevator_floor = elevator.position
         except ValueError:
-            print('введите верное количество людей')
+            print('некорректный ввод данных')
             continue
 
-        elevator = Elevator(floors, capacity, current_elevator_floor, waiters)
-        elevator.waiters.sort()
-        for human in elevator.waiters:
-            print(human)
+        if validate_elevator_parameters(floors, capacity, current_elevator_floor):
+            elevator = Elevator(floors, capacity, current_elevator_floor, None)
+            break
+        else:
+            exit()
 
-    else:  # Начинаем бесконечный цикл работы лифта
-        elevator.moving()
-        break
+    started = False
+    waiters = []
 
+    while True:
+        if not started:  # Начинаем работу лифта
+            try:
+                amount_people = randint(1, 5)
+                started = True
+                while amount_people > 0:
+                    try:
+                        waiter = generate_human()
+                        if validate_human_parameters(waiter.weight, waiter.current_floor, floors, waiter.going_to):
+                            amount_people -= 1
+                            waiter = Human(waiter.weight, waiter.current_floor, waiter.going_to)
+                            difference = abs(waiter.current_floor - elevator.position)
+                            waiter.set_difference(difference)
+                            waiters.append(waiter)
+
+                    except ValueError:
+                        print('некорректный ввод данных')
+                        continue
+
+            except ValueError:
+                print('введите верное количество людей')
+                continue
+
+            elevator = Elevator(floors, capacity, current_elevator_floor, waiters)
+            elevator.waiters.sort()
+            for human in elevator.waiters:
+                print(human)
+
+        else:  # Начинаем бесконечный цикл работы лифта
+            elevator.moving()
+            break
+
+
+if __name__ == "__main__":
+   main()

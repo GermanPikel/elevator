@@ -38,18 +38,17 @@ class Elevator:
         self.position = position
         self.waiters = waiters      # Список тех кто снаружи
         self.inside = inside        # Список тех кто внутри 
-        self.workload = workload     
+        self.workload = workload
+        self.people = self.waiters + self.inside
 
     def __lt__(self, other):
         for i in range(1, self.waiters):
             return self.waiters[i - 1].difference < self.waiters[i].difference
 
-
-
     # 1 действие программы
     def moving(self):
-        for human in self.waiters:  # TODO: Сделать пересортировку ( update_waiters() )
-            if human.current_floor == elevator.position:
+        for human in self.people:  # TODO: Сделать пересортировку ( update_waiters() )
+            if human.current_floor == elevator.position or (human.going_to == elevator.position and human.inside == True):
                 elevator.operation(elevator.position, human)
             elif human.current_floor > elevator.position:
                 for floor in range(elevator.position, human.current_floor + 1):
@@ -60,35 +59,66 @@ class Elevator:
             else:
                 for floor in range(elevator.position, human.current_floor - 1, -1):
                     print('лифт на %s этаже' % floor)
-                    sleep(1.5)
+                    sleep(1)
                 elevator.position = floor
                 elevator.operation(elevator.position, human)
-            self.waiters.remove(human)
-            self.waiters = update_waiters(self.waiters.copy())
+            self.people.sort()  # TODO сортировка для ожидающих и тех кто уже едет
+            # self.waiters.remove(human)
+            # self.waiters = update_waiters(self.waiters.copy())
 
-    def check_capacity(self, human: Human, elevator):
-        if elevator.workload + human.weight <= elevator.capacity:
-            return True
-        else:
-            print('лифт пропускает человека, возможна перегрузка')
+    def update_capacity(self, human: Human, elevator, in_out):
+        if in_out == 'in':
+            if elevator.workload + human.weight <= elevator.capacity:
+                elevator.workload += human.weight
+                return True
+            else:
+                print('лифт пропускает оставшихся на этаже, возможна перегрузка')
+                return False
+        elif in_out == 'out':
+            elevator.workload -= human.weight
 
     def operation(self, floor, waiter: Human):  # Описывает, что происходит на этаже во время нахождения на нем лифта
         door = 'close'
         elevator.open_close(door, floor)
         door = 'open'
-        capacity_ok = elevator.check_capacity(waiter, self)
+        for human in elevator.inside:
+            if human.going_to == elevator.position:
+                elevator.let_out(self)
+                break
+        capacity_ok = elevator.update_capacity(waiter, self, 'in')
         if capacity_ok:
             waiter.inside = not waiter.inside
+            waiter.current_floor = -1
             self.inside.append(waiter)
             sleep(3)
-            print('лифт забрал/высадил человека')
+            # print('лифт забрал человека')
+            self.take_all(elevator.waiters)
             sleep(1)
-            elevator.open_close(door, floor)
         else:
             skip_waiter()
+        elevator.open_close(door, floor)
 
     def stop(self):
         pass
+
+    def let_out(self, elevator: Elevator):  # TODO
+        for human in elevator.inside:
+            if human.going_to == elevator.position:
+                elevator.update_capacity(human, elevator, 'out')
+                print('человек вышел. в лифте осталось', len(elevator.inside), 'человек')
+                elevator.inside.remove(human)
+
+    def take_all(self, waiters):
+        new_passengers = 0
+        flag = None
+        for human in waiters:
+            if self.position == human.current_floor:
+                flag = self.update_capacity(human, self, 'in')
+                if flag == True:
+                    new_passengers += 1
+                else:
+                    break
+        print('лифт забрал', new_passengers, 'человек')
 
     def open_close(self, door, floor):
         if door == 'close':
@@ -182,7 +212,7 @@ def main():
             continue
 
         if validate_elevator_parameters(floors, capacity, current_elevator_floor):
-            elevator = Elevator(floors, capacity, current_elevator_floor, None)
+            elevator = Elevator(floors, capacity, current_elevator_floor, [])
             break
         else:
             exit()

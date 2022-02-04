@@ -8,10 +8,12 @@ class Building:
         self.floors = [Floor(), Floor(), Floor(), Floor()]
         self.elevator = Elevator()
 
+    #  одно действие для здания
     def next(self):
         for floor in self.floors:
             floor.next()
         self.elevator.next()
+        self._action()
 
     def get_elevator_position(self):
         return self.elevator.get_position()
@@ -21,3 +23,19 @@ class Building:
 
     def get_count_humans_in_floor(self, number):
         return self.floors[number].get_humans_count()
+
+    def _action(self):
+        for i in range(len(self.floors)):
+            if self.floors[i].elevator_button == True:
+                self.elevator.call(i)
+        if self.elevator.is_open() == True:
+            elevator_position = self.elevator.position
+            if self.floors[elevator_position].exist_human():
+                human = self.floors[elevator_position].let_in()
+                self.elevator.add_workload(human.weightKG)
+            else:
+                self.elevator.close()
+        # if len(self.elevator.calls) == 0 and self.elevator.position == 0:
+        #     self.elevator.call(3)
+        # elif len(self.elevator.calls) == 0 and self.elevator.position == 3:
+        #     self.elevator.call(0)

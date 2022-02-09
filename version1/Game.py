@@ -17,6 +17,7 @@ class Game:
     # 0 | x | * * *
     def _show(self):
         print('---------------------')
+        print(self.building.elevator.workload)
         # print(self.building.elevator.calls)
         elevator_position = self.building.get_elevator_position()
         count_floors = self.building.get_floors_count()

@@ -2,7 +2,7 @@ from version1.Human import Human
 from random import randint
 
 
-class Floor():
+class Floor:
 
     def __init__(self):
         self.humans = []
@@ -21,6 +21,9 @@ class Floor():
 
     def get_humans_count(self):
         return len(self.humans)
+
+    def get_human(self):
+        return self.humans[0]
 
     def let_in(self):
         return self.humans.pop(0)

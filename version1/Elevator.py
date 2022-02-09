@@ -29,12 +29,20 @@ class Elevator:
         if 0 <= floor_number < self.floors_count:
             self.buttons.add(floor_number)
 
+    def check_workload(self, weight, capacity):
+        if (self.workload + weight) <= capacity:
+            return True
+        return False
+
     def add_workload(self, weight):
         self.workload += weight
 
     def close(self):
         self._is_open = False
         self.calls.remove(self.position)
+
+    def __str__(self):
+        return self.workload
 
     #  совершает только одно действие с лифтом
     def _action(self):

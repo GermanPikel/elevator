@@ -31,8 +31,13 @@ class Building:
         if self.elevator.is_open() == True:
             elevator_position = self.elevator.position
             if self.floors[elevator_position].exist_human():
-                human = self.floors[elevator_position].let_in()
-                self.elevator.add_workload(human.weightKG)
+                human = self.floors[elevator_position].get_human()
+                if self.elevator.check_workload(human.weightKG, self.elevator.capacityKG):
+                    human = self.floors[elevator_position].let_in()
+                    self.elevator.add_workload(human.weightKG)
+                    self.elevator.goto_position.append(human)
+                else:
+                    self.elevator.close()
             else:
                 self.elevator.close()
         # if len(self.elevator.calls) == 0 and self.elevator.position == 0:
